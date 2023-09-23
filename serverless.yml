@@ -1,0 +1,118 @@
+service: dynamodb-crud-api
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: ap-south-1
+  environment:
+    DYNAMODB_TABLE_NAME: ${self:custom.postsTableName}
+
+custom:
+  postsTableName: posts-table-${self:provider.stage}
+
+plugins:
+  - serverless-iam-roles-per-function
+
+functions:
+  getPost:
+    handler: api.getPost
+    name: get-post
+    memorySize: 128 #mb
+    timeout: 5 #seconds
+    events:
+      - http:
+          path: post/{postId}
+          method: GET
+    iamRoleStatments:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:GetItem"
+        Resource:
+          Fn::GetAtt:
+            - PostsTable
+            - Arn
+    createPost:
+      handler: api.createPost
+      name: create-post
+      memorySize: 128 #mb
+      timeout: 5 #seconds
+      events:
+        - http:
+            path: post
+            method: POST
+      iamRoleStatments:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:PutItem"
+          Resource:
+          Fn::GetAtt:
+            - PostsTable
+            - Arn
+    updatePost:
+      handler: api.createPost
+      name: update-post
+      memorySize: 128 #mb
+      timeout: 5 #seconds
+      events:
+        - http:
+            path: post/{postId}
+            method: PUT
+      iamRoleStatments:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:UpdateItem"
+          Resource:
+          Fn::GetAtt:
+            - PostsTable
+            - Arn
+    deletePost:
+      handler: api.deletePost
+      name: update-post
+      memorySize: 128 #mb
+      timeout: 5 #seconds
+      events:
+        - http:
+            path: post/{postId}
+            method: DELETE
+      iamRoleStatments:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:DeleteItem"
+          Resource:
+            Fn::GetAtt:
+              - PostsTable
+              - Arn
+    getAllPosts:
+      handler: api.getAllPosts
+      name: update-post
+      memorySize: 128 #mb
+      timeout: 5 #seconds
+      events:
+        - http:
+            path: posts
+            method: GET
+      iamRoleStatments:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:Scan"
+          Resource:
+            Fn::GetAtt:
+              - PostsTable
+              - Arn
+
+resources:
+  Resources:
+    PostsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.postsTableName}
+        AttributeDefinitions:
+          - AttributeName: postId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: postId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
