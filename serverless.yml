@@ -4,7 +4,7 @@ provider:
   name: aws
   runtime: nodejs14.x
   stage: dev
-  region: us-west-1
+  region: ap-south-1
   environment:
     DYNAMODB_TABLE_NAME: ${self:custom.postsTableName}
 
@@ -18,73 +18,73 @@ functions:
   getPost:
     handler: api.getPost
     name: get-post
-    memorySize: 128 # mb
-    timeout: 5 # seconds
+    memorySize: 128 #mb
+    timeout: 5 #seconds
     events:
       - http:
           path: post/{postId}
           method: GET
-    iamRoleStatements:
+    iamRoleStatements: # Corrected property name
       - Effect: "Allow"
         Action:
           - "dynamodb:GetItem"
-        Resource: GetAtt PostsTable.Arn
+        Resource: "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/${self:custom.postsTableName}"
   createPost:
     handler: api.createPost
     name: create-post
-    memorySize: 128 # mb
-    timeout: 5 # seconds
+    memorySize: 128 #mb
+    timeout: 5 #seconds
     events:
       - http:
           path: post
           method: POST
-    iamRoleStatements:
+    iamRoleStatements: # Corrected property name
       - Effect: "Allow"
         Action:
           - "dynamodb:PutItem"
-        Resource: GetAtt PostsTable.Arn
+        Resource: "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/${self:custom.postsTableName}"
   updatePost:
-    handler: api.updatePost
+    handler: api.createPost
     name: update-post
-    memorySize: 128 # mb
-    timeout: 5 # seconds
+    memorySize: 128 #mb
+    timeout: 5 #seconds
     events:
       - http:
           path: post/{postId}
           method: PUT
-    iamRoleStatements:
+    iamRoleStatements: # Corrected property name
       - Effect: "Allow"
         Action:
           - "dynamodb:UpdateItem"
-        Resource: GetAtt PostsTable.Arn
+        Resource: "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/${self:custom.postsTableName}"
   deletePost:
     handler: api.deletePost
-    name: delete-post
-    memorySize: 128 # mb
-    timeout: 5 # seconds
+    name: delete-post # Corrected function name
+    memorySize: 128 #mb
+    timeout: 5 #seconds
     events:
       - http:
           path: post/{postId}
           method: DELETE
-    iamRoleStatements:
+    iamRoleStatements: # Corrected property name
       - Effect: "Allow"
         Action:
           - "dynamodb:DeleteItem"
-        Resource: GetAtt PostsTable.Arn
+        Resource: "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/${self:custom.postsTableName}"
   getAllPosts:
     handler: api.getAllPosts
-    name: get-all-posts
-    memorySize: 128 # mb
-    timeout: 5 # seconds
+    name: get-all-posts # Corrected function name
+    memorySize: 128 #mb
+    timeout: 5 #seconds
     events:
       - http:
           path: posts
           method: GET
-    iamRoleStatements:
+    iamRoleStatements: # Corrected property name
       - Effect: "Allow"
         Action:
           - "dynamodb:Scan"
-        Resource: GetAtt PostsTable.Arn
+        Resource: "arn:aws:dynamodb:${self:provider.region}:#{AWS::AccountId}:table/${self:custom.postsTableName}"
 
 resources:
   Resources:
@@ -101,4 +101,3 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-          
